@@ -32,11 +32,19 @@ services:
 
   # 3. Frontend React (Node 24 / Nginx)
   frontend:
-    build: ./fundacion-frontend
+    build: 
+      context: ./fundacion-frontend
+      dockerfile: Dockerfile.dev
     container_name: react_app
     restart: always
     ports:
       - "80:3000"
+    volumes:
+      - ./fundacion-frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - WATCHPACK_POLLING=true
     depends_on:
       - backend
 
