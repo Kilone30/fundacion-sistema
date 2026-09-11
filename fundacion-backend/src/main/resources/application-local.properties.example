@@ -1,0 +1,3 @@
+spring.datasource.url=jdbc:postgresql://localhost:5432/fundacion_db
+spring.datasource.username=tu_usuario_postgres
+spring.datasource.password=tu_contraseña_postgres
