@@ -1,7 +1,4 @@
-
-
 services:
-  # 1. Base de datos PostgreSQL
   db:
     image: postgres:18-alpine
     container_name: postgres_db
@@ -15,9 +12,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
-  # 2. Backend Spring Boot (Java 21 / Maven)
   backend:
-    build: ./fundacion-backend
+    build:
+      context: ./fundacion-backend
+      dockerfile: Dockerfile.dev
     container_name: springboot_app
     restart: always
     ports:
@@ -27,18 +25,20 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: secretpassword
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    volumes:
+      - ./fundacion-backend:/app
+      - maven_repo:/root/.m2
     depends_on:
       - db
 
-  # 3. Frontend React (Node 24 / Nginx)
   frontend:
-    build: 
+    build:
       context: ./fundacion-frontend
       dockerfile: Dockerfile.dev
     container_name: react_app
     restart: always
     ports:
-      - "80:3000"
+      - "3000:3000"
     volumes:
       - ./fundacion-frontend:/app
       - /app/node_modules
@@ -50,3 +50,4 @@ services:
 
 volumes:
   postgres_data:
+  maven_repo:
