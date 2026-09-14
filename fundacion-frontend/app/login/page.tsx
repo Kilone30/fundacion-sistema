@@ -106,7 +106,11 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
-      console.log(data);
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("nombre", data.nombre);
+      localStorage.setItem("rol", data.rol);
+
       router.push("/admin");
     } catch {
       setError("No se pudo conectar con el servidor.");

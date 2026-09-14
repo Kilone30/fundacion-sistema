@@ -1,30 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useInView } from "@/hooks/useInView";
 
-const actividades = [
-  {
-    categoria: "Medio ambiente",
-    colorBg: "#E9F7EC",
-    colorText: "#2C7A3F",
-    fecha: "15 sep 2026",
-    titulo: "Jornada de reforestación en el Parque Bicentenario",
-    descripcion:
-      "Sembramos 200 árboles junto con voluntarios de la comunidad, dejando algo verde para el futuro de Toluca.",
-  },
-  {
-    categoria: "Educación",
-    colorBg: "#FDEDEC",
-    colorText: "#B14A3B",
-    fecha: "2 sep 2026",
-    titulo: "Taller de repostería inclusivo",
-    descripcion:
-      "Entre azúcar y risas, compartimos clases de repostería con niños de la comunidad porque cada pastelito es una oportunidad de crear.",
-  },
-];
+interface Actividad {
+  id: number;
+  titulo: string;
+  descripcion: string;
+  fecha: string;
+  categoriaNombre: string | null;
+}
 
-function ActividadCard({ actividad }: { actividad: (typeof actividades)[0] }) {
+function ActividadCard({ actividad }: { actividad: Actividad }) {
   const { ref, inView } = useInView<HTMLDivElement>();
+
+  const fechaFormateada = new Date(actividad.fecha).toLocaleDateString("es-MX", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div
@@ -32,13 +26,12 @@ function ActividadCard({ actividad }: { actividad: (typeof actividades)[0] }) {
       className={`au-reveal ${inView ? "au-visible" : ""} border border-[#E4E9ED] rounded-xl p-6 bg-[#FBFCFD]`}
     >
       <div className="flex items-center gap-2.5 mb-2.5">
-        <span
-          style={{ background: actividad.colorBg, color: actividad.colorText }}
-          className="text-[11px] px-2.5 py-1 rounded-full font-medium"
-        >
-          {actividad.categoria}
-        </span>
-        <span className="text-[12.5px] text-[#8A97A0]">{actividad.fecha}</span>
+        {actividad.categoriaNombre && (
+          <span className="text-[11px] px-2.5 py-1 rounded-full font-medium bg-[#E9F7EC] text-[#2C7A3F]">
+            {actividad.categoriaNombre}
+          </span>
+        )}
+        <span className="text-[12.5px] text-[#8A97A0]">{fechaFormateada}</span>
       </div>
       <h2 className="font-semibold text-lg text-[#1B4C6E] mb-2">
         {actividad.titulo}
@@ -93,6 +86,17 @@ function PatronLateral({ lado }: { lado: "left" | "right" }) {
 }
 
 export default function ActividadesPage() {
+  const [actividades, setActividades] = useState<Actividad[]>([]);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/public/actividades")
+      .then((res) => res.json())
+      .then((data) => setActividades(data))
+      .catch((err) => console.error("Error cargando actividades:", err))
+      .finally(() => setCargando(false));
+  }, []);
+
   return (
     <div className="relative min-h-screen bg-white">
       <PatronLateral lado="left" />
@@ -125,8 +129,18 @@ export default function ActividadesPage() {
       </div>
 
       <div className="max-w-3xl mx-auto px-8 pb-16 flex flex-col gap-8 relative z-10">
-        {actividades.map((actividad, i) => (
-          <ActividadCard key={i} actividad={actividad} />
+        {cargando && (
+          <p className="text-center text-[#8A97A0] text-sm">Cargando actividades...</p>
+        )}
+
+        {!cargando && actividades.length === 0 && (
+          <p className="text-center text-[#8A97A0] text-sm">
+            Todavía no hay actividades publicadas.
+          </p>
+        )}
+
+        {actividades.map((actividad) => (
+          <ActividadCard key={actividad.id} actividad={actividad} />
         ))}
       </div>
     </div>
